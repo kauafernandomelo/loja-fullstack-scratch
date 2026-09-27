@@ -1,29 +1,30 @@
+// Ponto de entrada do backend: carrega o .env, monta o app Express, liga as rotas e sobe o servidor.
 import express from "express";
 import dotenv from "dotenv";
 import { connectDB } from "./config/db.js";
 import productRoutes from "./routes/product.route.js";
-// o server é  tipo  o main aqui a gente coloca a dontenv conifig q é a nossa senha de acesso ao banco de dados 
-// temos que validar o epxress com o app  = express ()
-// e o app.use.epress.json permite que a gente aceita json data no req.body
-// o app.use("/api/products", productRoutes)// vai fixar todos os rotuers para ir para api products invez de ser api/prodcts/udpate / delet etc 
 
-
-// o PORT que esta dentro do .env é a porta que a aplicaçao funcionara é 1 boa pratica  colocar la a porta
-// e aqui em baixo chamala  no console log mas basicamente é so 1 boa pratica da no msm so escrever la ou mudar aqui msmo no const port e trocar dps do || 
-
-
-const PORT = process.env.PORT || 5000;
-
+// carrega as variaveis do .env (PORT, MONGO_URI) pra dentro do process.env
+// tem que vir antes de qualquer leitura do process.env, senao elas ainda nao existem
 dotenv.config();
+
+const PORT = process.env.PORT || 5000; // se o .env nao tiver PORT, usa 5000
 
 const app = express();
 
-app.use(express.json()); // permite a gente aceitar JSON data  no req.body
+app.use(express.json()); // transforma o corpo JSON das requisicoes em objeto no req.body
 
-app.use("/api/products", productRoutes);// aqui vai prefixar sem precisar ter outros routes para chamar os methodos que eu ja tinha cirado antes 
+// todas as rotas do productRoutes ficam com o prefixo /api/products
+app.use("/api/products", productRoutes);
 
+app.listen(PORT, (error) => {
+  // no Express 5, se o servidor nao conseguir subir (ex: porta ocupada), o erro chega aqui
+  // sem esse if, ele imprimia "Server started" mesmo sem estar escutando a porta
+  if (error) {
+    console.error(`Error starting server: ${error.message}`);
+    process.exit(1);
+  }
 
-app.listen(PORT, () => {
   connectDB();
-  console.log("Server started at local host http://localhost:" + PORT);
+  console.log(`Server started at http://localhost:${PORT}`);
 });
